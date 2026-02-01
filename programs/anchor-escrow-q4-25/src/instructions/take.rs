@@ -78,7 +78,16 @@ impl<'info> Take<'info> {
         mint:self.mint_a.to_account_info(),
         to:self.taker_ata_a.to_account_info(),
         authority:self.escrow.to_account_info()
-        }
+        };
+        let seeds = &self.escrow.seed.to_le_bytes();
+        let signer_seeds&{&[&[u8]]} =&[&[b"escrow",self.escrow.maker.as_ref(),
+        seeds.as_ref(),&[self.escrow.bump]]];
+          let cpi_ctx = CpiContext::new_with_signer(
+            self.token_program.to_account_info(),
+            transferacc,
+            signer_seeds,
+        );
+        transfer_checked(cpi_ctx, self.escrow_vault.amount, self.mint_a.decimals)?;
         Ok(())
     }
 }
